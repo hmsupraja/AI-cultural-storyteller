@@ -26,8 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentStory = null;
     let currentAudioUrl = null;
+    let activeController = null;
 
-    // Display status messages
+    // Status messages
     function showStatus(message, type = "info") {
         statusMessage.textContent = message;
         statusMessage.dataset.type = type;
@@ -39,48 +40,48 @@ document.addEventListener("DOMContentLoaded", () => {
         statusMessage.style.display = "none";
     }
 
-    // Safely read favorites from localStorage
+    // Read saved stories
     function getFavorites() {
         try {
-            const saved = JSON.parse(
+            const items = JSON.parse(
                 localStorage.getItem(FAVORITES_KEY) || "[]"
             );
-
-            return Array.isArray(saved) ? saved : [];
+            return Array.isArray(items) ? items : [];
         } catch (error) {
             console.error("Could not read favorites:", error);
             return [];
         }
     }
 
-    // Remove common Markdown symbols from story previews
-    function cleanPreview(text) {
+    // Remove Markdown formatting from displayed text
+    function cleanText(text) {
         return String(text || "")
             .replace(/\*\*(.*?)\*\*/g, "$1")
-            .replace(/\*(.*?)\*/g, "$1")
+            .replace(/__(.*?)__/g, "$1")
+            .replace(/(?<!\*)\*([^*\n]+)\*/g, "$1")
             .replace(/^#{1,6}\s+/gm, "")
-            .replace(/\s+/g, " ")
             .trim();
     }
 
-    // Display story text safely
+    // Display a story safely
     function renderStoryText(text) {
         storyText.replaceChildren();
 
-        String(text || "")
-            .split(/\n+/)
-            .map(line => line.trim())
-            .filter(Boolean)
-            .forEach(line => {
-                const paragraph = document.createElement("p");
-                paragraph.textContent = line.replace(/^#{1,6}\s*/, "");
-                storyText.appendChild(paragraph);
-            });
+        const cleaned = cleanText(text);
 
-        transcriptText.textContent = text || "";
+        cleaned.split(/\n+/).forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+
+            const paragraph = document.createElement("p");
+            paragraph.textContent = trimmed;
+            storyText.appendChild(paragraph);
+        });
+
+        transcriptText.textContent = cleaned;
     }
 
-    // Clear the current audio and release temporary URLs
+    // Stop and remove previous audio
     function clearAudio() {
         audioPlayer.pause();
         audioPlayer.removeAttribute("src");
@@ -92,10 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         downloadBtn.hidden = true;
-        downloadBtn.removeAttribute("data-audio-url");
+        delete downloadBtn.dataset.audioUrl;
     }
 
-    // Handle audio returned as Base64 or as a URL
+    // Load audio returned by Flask
     function setAudio(data) {
         clearAudio();
 
@@ -110,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (base64Audio) {
             try {
-                // Support either plain Base64 or a data URL
                 const base64 = String(base64Audio).includes(",")
                     ? String(base64Audio).split(",").pop()
                     : String(base64Audio);
@@ -131,30 +131,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 downloadBtn.hidden = false;
                 return;
             } catch (error) {
-                console.error("Could not process Base64 audio:", error);
+                console.error("Audio conversion failed:", error);
+                showStatus(
+                    "The story was generated, but the audio could not be loaded.",
+                    "error"
+                );
+                return;
             }
         }
 
         if (audioUrl) {
-            // Only accept HTTP(S) URLs or same-origin relative URLs
             try {
-                const parsedUrl = new URL(audioUrl, window.location.origin);
+                const parsed = new URL(audioUrl, window.location.origin);
 
                 if (
-                    parsedUrl.protocol === "https:" ||
-                    parsedUrl.protocol === "http:"
+                    parsed.protocol !== "https:" &&
+                    parsed.protocol !== "http:"
                 ) {
-                    audioPlayer.src = parsedUrl.href;
-                    downloadBtn.dataset.audioUrl = parsedUrl.href;
-                    downloadBtn.hidden = false;
+                    throw new Error("Unsupported audio URL.");
                 }
+
+                audioPlayer.src = parsed.href;
+                downloadBtn.dataset.audioUrl = parsed.href;
+                downloadBtn.hidden = false;
             } catch (error) {
                 console.error("Invalid audio URL:", error);
             }
         }
     }
 
-    // Display a generated or saved story
+    // Show the newly generated or saved story
     function displayStory(data) {
         currentStory = data;
 
@@ -172,38 +178,65 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Generate a story using the deployed Flask backend
-    async function generateStory(event) {
-        if (event) {
-            event.preventDefault();
-        }
+    // Reset the current result before starting another request
+    function clearCurrentResult() {
+        currentStory = null;
 
-        clearStatus();
+        resultSection.hidden = true;
+        storyText.replaceChildren();
+        transcriptText.textContent = "";
+
+        saveFavoriteBtn.hidden = true;
+        clearAudio();
+    }
+
+    // Generate a fresh story for the current search topic
+    async function generateStory(event) {
+        if (event) event.preventDefault();
 
         const topic = topicInput.value.trim();
 
         if (!topic) {
-            showStatus(
-                "Please enter a topic or select a story from the gallery.",
-                "error"
-            );
+            showStatus("Please enter a story topic first.", "error");
             topicInput.focus();
             return;
         }
 
+        // Cancel a previous request if one is still running
+        if (activeController) {
+            activeController.abort();
+        }
+
+        clearStatus();
+        clearCurrentResult();
+
+        // Capture current preferences before sending the request
+        const requestBody = {
+            topic: topic,
+            storyType: storyType.value,
+            language: language.value,
+            voice: voice.value
+        };
+
+        storyTitle.textContent = topic;
+
         const originalButtonText = generateBtn.textContent;
+
+        activeController = new AbortController();
+        const controller = activeController;
 
         generateBtn.disabled = true;
         generateBtn.textContent = "Generating your story...";
 
         showStatus(
-            "Generating your story and audio. Please wait...",
+            `Generating a new story about ${topic}. Please wait...`,
             "info"
         );
 
-        // Prevent an indefinitely pending browser request
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
+        // Allow enough time for AI generation, but avoid endless loading
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, 180000);
 
         try {
             const response = await fetch(API_URL, {
@@ -211,13 +244,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    topic: topic,
-                    storyType: storyType.value,
-                    language: language.value,
-                    voice: voice.value
-                }),
-                signal: controller.signal
+                body: JSON.stringify(requestBody),
+                signal: controller.signal,
+                cache: "no-store"
             });
 
             let data;
@@ -234,41 +263,50 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(
                     data.error ||
                     data.message ||
-                    `Request failed with status ${response.status}.`
+                    `Server error: ${response.status}`
                 );
             }
 
-            if (!data.story) {
+            if (
+                typeof data.story !== "string" ||
+                !data.story.trim()
+            ) {
                 throw new Error(
                     data.error ||
                     data.message ||
-                    "The server did not return a story."
+                    "The server returned no story."
                 );
             }
 
+            // Ignore a response if another request has replaced it
+            if (activeController !== controller) return;
+
+            // Display the response for the requested topic
             displayStory({
                 ...data,
                 topic: topic,
                 story: data.story,
-                storyType: storyType.value,
-                language: language.value,
-                voice: voice.value,
+                storyType: requestBody.storyType,
+                language: requestBody.language,
+                voice: requestBody.voice,
                 createdAt: new Date().toISOString()
             });
 
-            showStatus("Your cultural story is ready!", "success");
+            showStatus("Your new cultural story is ready!", "success");
 
         } catch (error) {
+            if (activeController !== controller) return;
+
             console.error("Story generation failed:", error);
 
             if (error.name === "AbortError") {
                 showStatus(
-                    "The request took too long. Check Render logs and try again.",
+                    "The request timed out or was cancelled. Check Render logs and try again.",
                     "error"
                 );
             } else if (error.message === "Failed to fetch") {
                 showStatus(
-                    "Could not connect to the Flask API. Check the Render service and /generate-story route.",
+                    "Could not connect to Flask. Check your Render service and /generate-story route.",
                     "error"
                 );
             } else {
@@ -276,23 +314,30 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } finally {
             clearTimeout(timeoutId);
-            generateBtn.disabled = false;
-            generateBtn.textContent = originalButtonText;
+
+            if (activeController === controller) {
+                activeController = null;
+                generateBtn.disabled = false;
+                generateBtn.textContent = originalButtonText;
+            }
         }
     }
 
-    // Form submission
+    // Generate from the form
     storyForm.addEventListener("submit", generateStory);
 
-    // Explore button: prepare the topic and move to the generator
+    // Explore button: update the selected topic and go to the form
     searchBtn.addEventListener("click", () => {
-        if (!topicInput.value.trim()) {
-            showStatus("Enter a topic to explore.", "info");
+        const topic = topicInput.value.trim();
+
+        if (!topic) {
+            showStatus("Enter a topic to explore.", "error");
             topicInput.focus();
             return;
         }
 
-        storyTitle.textContent = topicInput.value.trim();
+        clearStatus();
+        storyTitle.textContent = topic;
 
         $("storyPanel").scrollIntoView({
             behavior: "smooth",
@@ -300,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Pressing Enter in the search field generates a story
+    // Pressing Enter in the search box starts generation
     topicInput.addEventListener("keydown", event => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -308,7 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Gallery card selection
+    // Gallery cards select custom topics
     document.querySelectorAll(".gallery-card").forEach(card => {
         card.addEventListener("click", () => {
             topicInput.value = card.dataset.topic || "";
@@ -324,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Gallery category filters
+    // Filter gallery categories
     document.querySelectorAll(".gallery-filter").forEach(button => {
         button.addEventListener("click", () => {
             const filter = button.dataset.filter || "all";
@@ -343,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Download generated audio
+    // Download audio
     downloadBtn.addEventListener("click", async () => {
         const url = currentAudioUrl || downloadBtn.dataset.audioUrl;
 
@@ -352,18 +397,17 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        try {
-            if (currentAudioUrl) {
-                const link = document.createElement("a");
-                link.href = currentAudioUrl;
-                link.download = "cultural-story.mp3";
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                return;
-            }
+        if (currentAudioUrl) {
+            const link = document.createElement("a");
+            link.href = currentAudioUrl;
+            link.download = "cultural-story.mp3";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            return;
+        }
 
-            // Fetch remote audio where the server permits it
+        try {
             const response = await fetch(url);
 
             if (!response.ok) {
@@ -382,9 +426,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             URL.revokeObjectURL(temporaryUrl);
         } catch (error) {
-            console.error("Download error:", error);
+            console.error("Audio download failed:", error);
             showStatus(
-                "Could not download the audio. Try using the audio player's controls.",
+                "Could not download the audio. Try the audio player's controls.",
                 "error"
             );
         }
@@ -399,17 +443,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const favorites = getFavorites();
 
-        const alreadySaved = favorites.some(item =>
+        const exists = favorites.some(item =>
             item.topic === currentStory.topic &&
             item.story === currentStory.story
         );
 
-        if (alreadySaved) {
+        if (exists) {
             showStatus("This story is already in your favorites.", "info");
             return;
         }
 
-        // Audio is not saved in localStorage
+        // Audio is not stored in localStorage
         const {
             audioBase64,
             audio_base64,
@@ -432,13 +476,13 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (error) {
             console.error("Could not save favorite:", error);
             showStatus(
-                "Could not save the story. Your browser storage may be full.",
+                "Could not save the story. Browser storage may be full.",
                 "error"
             );
         }
     });
 
-    // Render the favorites list
+    // Render saved stories
     function renderFavorites() {
         const favorites = getFavorites();
 
@@ -453,11 +497,14 @@ document.addEventListener("DOMContentLoaded", () => {
             title.textContent = favorite.topic || "Cultural Story";
 
             const preview = document.createElement("p");
-            const cleanText = cleanPreview(favorite.story);
+            const cleaned = cleanText(favorite.story);
             preview.textContent =
-                cleanText.length > 160
-                    ? cleanText.slice(0, 160) + "..."
-                    : cleanText;
+                cleaned.length > 160
+                    ? cleaned.slice(0, 160) + "..."
+                    : cleaned;
+
+            const actions = document.createElement("div");
+            actions.className = "favorite-actions";
 
             const readButton = document.createElement("button");
             readButton.type = "button";
@@ -472,36 +519,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 showStatus(
-                    "Saved story opened. Generate it again if you need audio.",
+                    "Saved story opened. Audio is not stored with favorites.",
                     "info"
                 );
             });
 
             const removeButton = document.createElement("button");
             removeButton.type = "button";
+            removeButton.className = "favorite-remove-btn";
             removeButton.textContent = "Remove";
 
             removeButton.addEventListener("click", () => {
-                const updatedFavorites = getFavorites();
-                updatedFavorites.splice(index, 1);
+                const updated = getFavorites();
+                updated.splice(index, 1);
 
-                localStorage.setItem(
-                    FAVORITES_KEY,
-                    JSON.stringify(updatedFavorites)
-                );
+                try {
+                    localStorage.setItem(
+                        FAVORITES_KEY,
+                        JSON.stringify(updated)
+                    );
 
-                renderFavorites();
-                showStatus("Favorite removed.", "success");
+                    renderFavorites();
+                    showStatus("Favorite removed.", "success");
+                } catch (error) {
+                    console.error("Could not remove favorite:", error);
+                    showStatus("Could not update favorites.", "error");
+                }
             });
 
-            card.append(title, preview, readButton, removeButton);
+            actions.append(readButton, removeButton);
+            card.append(title, preview, actions);
             favoritesList.appendChild(card);
         });
     }
 
-    // Create Another Story: clear all previous story inputs and results
+    // Create Another Story: reset the search and previous result
     newStoryBtn.addEventListener("click", () => {
-        currentStory = null;
+        // Cancel any pending request
+        if (activeController) {
+            activeController.abort();
+            activeController = null;
+        }
 
         topicInput.value = "";
         storyTitle.textContent = "Create Your Cultural Story";
@@ -510,25 +568,24 @@ document.addEventListener("DOMContentLoaded", () => {
         language.selectedIndex = 0;
         voice.selectedIndex = 0;
 
-        storyText.replaceChildren();
-        transcriptText.textContent = "";
-
-        resultSection.hidden = true;
-        saveFavoriteBtn.hidden = true;
-
-        clearAudio();
+        clearCurrentResult();
         clearStatus();
+
+        generateBtn.disabled = false;
+        generateBtn.textContent = "✨ Generate Story & Audio";
 
         topicInput.focus();
 
-        window.scrollTo({
-            top: $("storyPanel").getBoundingClientRect().top +
-                window.scrollY - 20,
-            behavior: "smooth"
+        $("storyPanel").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
         });
     });
 
     // Initialize the page
     resultSection.hidden = true;
+    saveFavoriteBtn.hidden = true;
+    downloadBtn.hidden = true;
+
     renderFavorites();
 });
