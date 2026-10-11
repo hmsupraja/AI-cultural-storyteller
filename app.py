@@ -1,30 +1,34 @@
-
 import os
 import base64
 import requests
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    static_folder=BASE_DIR,
+    static_url_path=""
+)
+
 CORS(app)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 MURF_API_KEY = os.getenv("MURF_API_KEY")
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY is missing. Check your .env file.")
+# Initialize Gemini only when the API key is available.
+client = (
+    genai.Client(api_key=GEMINI_API_KEY)
+    if GEMINI_API_KEY
+    else None
+)
 
-if not MURF_API_KEY:
-    raise ValueError("MURF_API_KEY is missing. Check your .env file.")
-
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-# Story generation prompts
 PROMPTS = {
     "Summary": """
 You are an Indian cultural storyteller.
@@ -45,7 +49,6 @@ Respond only in {language}.
 """
 }
 
-# Murf voice IDs
 VOICES = {
     "English": {"Male": "Matthew", "Female": "Alicia"},
     "Hindi": {"Male": "Aman", "Female": "Namrita"},
@@ -53,7 +56,6 @@ VOICES = {
     "Telugu": {"Male": "Zion", "Female": "Josie"}
 }
 
-# Language locales
 LOCALES = {
     "English": "en-US",
     "Hindi": "hi-IN",
@@ -63,6 +65,9 @@ LOCALES = {
 
 
 def generate_story(topic, story_type, language):
+    if not client:
+        raise RuntimeError("GEMINI_API_KEY is not configured.")
+
     prompt = PROMPTS[story_type].format(
         topic=topic,
         language=language
@@ -79,7 +84,6 @@ def generate_story(topic, story_type, language):
     story = response.text.strip()
 
     # Keep the story within Murf's request limit.
-    # Prefer ending at a word boundary.
     if len(story) > 2900:
         shortened = story[:2900]
         last_space = shortened.rfind(" ")
@@ -89,7 +93,6 @@ def generate_story(topic, story_type, language):
 
         story = shortened.rstrip()
 
-        # Avoid ending in the middle of a sentence when possible.
         last_sentence = max(
             story.rfind("."),
             story.rfind("!"),
@@ -104,10 +107,8 @@ def generate_story(topic, story_type, language):
 
 def generate_speech(text, voice_id, locale):
     if not MURF_API_KEY:
-        raise RuntimeError("MURF_API_KEY is missing.")
+        raise RuntimeError("MURF_API_KEY is not configured.")
 
-    # Murf accepts a maximum of 3000 characters per request.
-    # Use a safety margin below the limit.
     if len(text) > 2900:
         raise ValueError(
             f"Story is too long for Murf: {len(text)} characters."
@@ -138,31 +139,38 @@ def generate_speech(text, voice_id, locale):
     )
 
     if response.status_code != 200:
-        print("Murf status:", response.status_code)
-        print("Murf response:", response.text)
-
+        app.logger.error(
+            "Murf API returned status %s: %s",
+            response.status_code,
+            response.text
+        )
         raise RuntimeError(
-            f"Murf API returned status {response.status_code}"
+            f"Murf API returned status {response.status_code}."
         )
 
-    # Encode the returned audio for the frontend.
     return base64.b64encode(response.content).decode("utf-8")
+
+
+@app.route("/", methods=["GET"])
+def home():
+    return send_from_directory(BASE_DIR, "index.html")
 
 
 @app.route("/generate-story", methods=["POST"])
 def generate_story_api():
     data = request.get_json(silent=True) or {}
 
-    topic = data.get("topic", "").strip()
+    topic = data.get("topic", "")
     story_type = data.get("storyType", "Summary")
     language = data.get("language", "English")
     voice = data.get("voice", "Male")
 
-    # Validate the user's input.
-    if not topic:
+    if not isinstance(topic, str) or not topic.strip():
         return jsonify({
             "error": "Enter a story topic."
         }), 400
+
+    topic = topic.strip()
 
     if story_type not in PROMPTS:
         return jsonify({
@@ -174,15 +182,19 @@ def generate_story_api():
             "error": "Invalid language or voice."
         }), 400
 
+    if not GEMINI_API_KEY or not MURF_API_KEY:
+        app.logger.error("Required API keys are not configured.")
+        return jsonify({
+            "error": "The service is not configured. Please try again later."
+        }), 503
+
     try:
-        # Generate the cultural story.
         story = generate_story(
             topic,
             story_type,
             language
         )
 
-        # Generate audio for the story.
         audio = generate_speech(
             story,
             VOICES[language][voice],
@@ -196,21 +208,14 @@ def generate_story_api():
 
     except Exception:
         app.logger.exception("Story generation failed")
-
         return jsonify({
-            "error": (
-                "Story generation failed. "
-                "Check the terminal for details."
-            )
+            "error": "Story generation failed. Please try again later."
         }), 500
 
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({
-        "message": "Cultural Storyteller API is running."
-    }), 200
-
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=False
+    )
