@@ -265,4 +265,10 @@ Cultural Storyteller demonstrates how generative AI and text-to-speech can be co
 
 ---
 
-**Maintainer:** Add your name and project details here before submission.
+**Maintainer:** HASTHALAMANGALI SUPRAJA
+
+**Project:** Cultural Storyteller
+
+**GitHub Repository:** https://github.com/hmsupraja/AI-cultural-storyteller
+
+**Technologies:** Python, Flask, Google Gemini AI, Murf AI, HTML, CSS, JavaScript
