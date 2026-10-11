@@ -43,7 +43,7 @@ You are an Indian cultural storyteller.
 Explain "{topic}" in {language} in detail.
 Include historical background, cultural significance,
 traditions, interesting facts and relevant examples.
-Keep the story under 2700 characters.
+Keep the story under 3700 characters.
 Distinguish legends from verified historical facts.
 Respond only in {language}.
 """
