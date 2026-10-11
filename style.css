@@ -791,3 +791,27 @@ summary:focus-visible {
         transition-duration: 0.01ms !important;
     }
 }
+
+.favorite-card button {
+    padding: 11px 18px;
+    margin: 5px 8px 0 0;
+    border: 1px solid #c66a24;
+    border-radius: 10px;
+    background: #fff3e5;
+    color: #713b1e;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.favorite-card button:hover {
+    background: #a94d12;
+    color: #ffffff;
+    border-color: #a94d12;
+}
+
+.favorite-card button:focus-visible {
+    outline: 3px solid #e8b17e;
+    outline-offset: 3px;
+}
