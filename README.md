@@ -29,7 +29,7 @@ An AI-powered web application that creates cultural stories from user-provided t
 ## Project Structure
 
 ```text
-cultural-storyteller/
+AI-cultural-storyteller/
 ├── app.py              # Flask application and API endpoint
 ├── index.html          # Main web page
 ├── style.css           # Styling and responsive layout
