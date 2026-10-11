@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cultural Storyteller | Discover Indian Heritage</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <a href="#" class="logo">📖 Cultural Storyteller</a>
+        <span class="tagline">Stories, traditions & heritage</span>
+    </header>
+
+    <main class="container">
+
+        <section class="hero">
+            <p class="eyebrow">DISCOVER INDIA THROUGH STORIES</p>
+            <h1>Every Culture Has a Story.</h1>
+            <p>
+                Explore Indian festivals, folklore, history and traditions
+                through AI-generated stories and multilingual audio.
+            </p>
+        </section>
+
+        <section class="search-section">
+            <label for="topicInput">What would you like to discover?</label>
+
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="topicInput"
+                    placeholder="Try The Story of Diwali..."
+                >
+                <button id="searchBtn">Explore</button>
+            </div>
+        </section>
+
+        <section class="categories">
+            <h2>Explore Cultural Stories</h2>
+
+            <div class="category-grid">
+
+                <button class="story-card" data-topic="The Story of Diwali">
+                    <span class="card-icon">🪔</span>
+                    <h3>Festivals</h3>
+                    <p>Discover the stories behind Indian celebrations.</p>
+                </button>
+
+                <button class="story-card" data-topic="The Legend of Tenali Rama">
+                    <span class="card-icon">📜</span>
+                    <h3>Folklore</h3>
+                    <p>Explore traditional tales, legends and wisdom.</p>
+                </button>
+
+                <button class="story-card" data-topic="The History of the Chola Dynasty">
+                    <span class="card-icon">🏛️</span>
+                    <h3>History</h3>
+                    <p>Discover India's historical events and kingdoms.</p>
+                </button>
+
+                <button class="story-card" data-topic="The Bathukamma Festival of Telangana">
+                    <span class="card-icon">🌼</span>
+                    <h3>Regional Culture</h3>
+                    <p>Learn about regional art, customs and traditions.</p>
+                </button>
+
+            </div>
+        </section>
+
+        <section class="story-panel" id="storyPanel">
+
+            <div class="section-heading">
+                <p class="eyebrow">YOUR STORY EXPERIENCE</p>
+                <h2 id="storyTitle">Create Your Cultural Story</h2>
+                <p>Choose your preferences and generate your story.</p>
+            </div>
+
+            <form id="storyForm">
+
+                <label for="storyType">Story length</label>
+                <select id="storyType">
+                    <option value="Summary">Short Story</option>
+                    <option value="Detailed">Detailed Story</option>
+                </select>
+
+                <label for="language">Language</label>
+                <select id="language">
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Telugu">Telugu</option>
+                </select>
+
+                <label for="voice">Narrator voice</label>
+                <select id="voice">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+
+                <button type="submit" id="generateBtn" class="primary-btn">
+                    ✨ Generate Story & Audio
+                </button>
+
+            </form>
+
+            <p id="statusMessage" role="status" aria-live="polite"></p>
+
+            <div id="resultSection" class="result-section" hidden>
+
+                <h2>Your Cultural Story</h2>
+
+                <div id="storyText" class="story-text"></div>
+
+                <h3>Listen to Your Story</h3>
+
+                <audio id="audioPlayer" controls preload="none">
+                    Your browser does not support audio playback.
+                </audio>
+
+                <button id="downloadBtn" class="secondary-btn" hidden>
+                    Download Audio
+                </button>
+
+                <details class="transcript">
+                    <summary>Read Story Transcript</summary>
+                    <div id="transcriptText"></div>
+                </details>
+
+                <button id="newStoryBtn" class="secondary-btn">
+                    Create Another Story
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Made with ❤️ to celebrate India's cultural heritage.</p>
+        <p>Powered by Gemini AI and Murf AI.</p>
+    </footer>
+
+    <script src="index.js"></script>
+
+</body>
+</html>

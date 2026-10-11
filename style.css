@@ -1,0 +1,289 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --primary: #b45309;
+    --primary-dark: #92400e;
+    --background: #fffaf2;
+    --surface: #ffffff;
+    --text: #292524;
+    --muted: #78716c;
+    --border: #eee3d5;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 7%;
+    background: white;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo {
+    font-size: 21px;
+    font-weight: bold;
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
+.tagline {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.container {
+    width: min(1100px, 90%);
+    margin: auto;
+}
+
+.hero {
+    text-align: center;
+    padding: 75px 15px 45px;
+}
+
+.eyebrow {
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+
+.hero h1 {
+    font-size: clamp(32px, 5vw, 54px);
+    line-height: 1.15;
+    margin-bottom: 18px;
+}
+
+.hero > p:last-child {
+    max-width: 650px;
+    margin: auto;
+    color: var(--muted);
+}
+
+.search-section {
+    max-width: 700px;
+    margin: 0 auto 65px;
+}
+
+.search-section label,
+#storyForm label {
+    display: block;
+    font-weight: bold;
+    margin: 15px 0 8px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: white;
+    font-size: 15px;
+}
+
+button {
+    cursor: pointer;
+    font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 3px;
+}
+
+.search-box button,
+.primary-btn {
+    border: none;
+    border-radius: 9px;
+    padding: 13px 22px;
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+}
+
+.search-box button:hover,
+.primary-btn:hover {
+    background: var(--primary-dark);
+}
+
+.categories {
+    margin-bottom: 70px;
+}
+
+.categories h2,
+.section-heading h2 {
+    font-size: 28px;
+    margin-bottom: 22px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.story-card {
+    text-align: left;
+    padding: 22px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.story-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px #0000000d;
+}
+
+.card-icon {
+    font-size: 32px;
+}
+
+.story-card h3 {
+    margin: 12px 0 7px;
+}
+
+.story-card p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.story-panel {
+    background: white;
+    padding: clamp(20px, 5vw, 45px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    margin-bottom: 65px;
+}
+
+.section-heading {
+    margin-bottom: 25px;
+}
+
+.section-heading > p:last-child {
+    color: var(--muted);
+}
+
+#storyForm {
+    max-width: 650px;
+}
+
+#storyForm select {
+    margin-bottom: 10px;
+}
+
+.primary-btn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#statusMessage {
+    margin-top: 18px;
+    color: var(--primary-dark);
+}
+
+.result-section {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid var(--border);
+}
+
+.story-text,
+#transcriptText {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 18px 0;
+    line-height: 1.9;
+}
+
+#audioPlayer {
+    width: 100%;
+    margin: 12px 0 20px;
+}
+
+.secondary-btn {
+    background: white;
+    color: var(--primary-dark);
+    border: 1px solid var(--border);
+    padding: 11px 17px;
+    border-radius: 8px;
+    margin: 8px 8px 8px 0;
+}
+
+.transcript {
+    background: var(--background);
+    padding: 16px;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+.transcript summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+footer {
+    text-align: center;
+    padding: 30px 15px;
+    background: white;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+@media (max-width: 800px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .navbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .hero {
+        padding-top: 50px;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-box button {
+        width: 100%;
+    }
+}
