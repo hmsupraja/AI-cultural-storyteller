@@ -1,94 +1,219 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="theme-color" content="#fffaf2">
     <title>Cultural Storyteller | Discover Indian Heritage</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <header class="navbar">
-        <a href="#" class="logo">📖 Cultural Storyteller</a>
-        <span class="tagline">Stories, traditions & heritage</span>
-    </header>
+<header class="navbar">
+    <a href="#" class="logo">📖 Cultural Storyteller</a>
+    <span class="tagline">Stories, traditions &amp; heritage</span>
+</header>
 
-    <main class="container">
+<main class="container">
 
-        <section class="hero">
-            <p class="eyebrow">DISCOVER INDIA THROUGH STORIES</p>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <p class="eyebrow">Discover India Through Stories</p>
             <h1>Every Culture Has a Story.</h1>
-            <p>
+            <p class="hero-description">
                 Explore Indian festivals, folklore, history and traditions
                 through AI-generated stories and multilingual audio.
             </p>
-        </section>
+        </div>
 
-        <section class="search-section">
-            <label for="topicInput">What would you like to discover?</label>
-
-            <div class="search-box">
-                <input
-                    type="text"
-                    id="topicInput"
-                    placeholder="Try The Story of Diwali..."
-                >
-                <button id="searchBtn">Explore</button>
+        <div class="hero-art" aria-hidden="true">
+            <img src="assets/cultural-hero.png" alt="" fetchpriority="high">
+            <div class="hero-art-caption">
+                <span>✦</span> Stories • Traditions • Heritage
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="categories">
-            <h2>Explore Cultural Stories</h2>
+    <!-- Search -->
+    <section class="search-section">
+        <label for="topicInput">What would you like to discover?</label>
+        <div class="search-box">
+            <input
+                type="text"
+                id="topicInput"
+                placeholder="Try The Story of Diwali..."
+                autocomplete="off"
+            >
+            <button type="button" id="searchBtn">Explore</button>
+        </div>
+    </section>
 
-            <div class="category-grid">
+    <!-- Cultural Story Gallery -->
+    <section class="gallery-section" id="storyGallery">
+        <div class="gallery-heading">
+            <p class="eyebrow">A World of Indian Heritage</p>
+            <h2>Discover Your Next Story</h2>
+            <p>
+                Choose a topic and let AI bring India's stories,
+                traditions, and history to life.
+            </p>
+        </div>
 
-                <button class="story-card" data-topic="The Story of Diwali">
-                    <span class="card-icon">🪔</span>
-                    <h3>Festivals</h3>
-                    <p>Discover the stories behind Indian celebrations.</p>
-                </button>
+        <div class="gallery-filters" aria-label="Filter story categories">
+            <button type="button" class="gallery-filter active"
+                    data-filter="all" aria-pressed="true">All Stories</button>
+            <button type="button" class="gallery-filter"
+                    data-filter="festival" aria-pressed="false">Festivals</button>
+            <button type="button" class="gallery-filter"
+                    data-filter="folklore" aria-pressed="false">Folklore</button>
+            <button type="button" class="gallery-filter"
+                    data-filter="history" aria-pressed="false">History</button>
+            <button type="button" class="gallery-filter"
+                    data-filter="regional" aria-pressed="false">Regional Culture</button>
+        </div>
 
-                <button class="story-card" data-topic="The Legend of Tenali Rama">
-                    <span class="card-icon">📜</span>
-                    <h3>Folklore</h3>
-                    <p>Explore traditional tales, legends and wisdom.</p>
-                </button>
+        <div class="gallery-grid">
+            <button type="button" class="gallery-card"
+                    data-category="festival" data-topic="The Story of Diwali">
+                <span class="gallery-emoji">🪔</span>
+                <span class="gallery-card-title">The Story of Diwali</span>
+                <span class="gallery-card-description">
+                    Discover the Festival of Lights and its traditions.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
 
-                <button class="story-card" data-topic="The History of the Chola Dynasty">
-                    <span class="card-icon">🏛️</span>
-                    <h3>History</h3>
-                    <p>Discover India's historical events and kingdoms.</p>
-                </button>
+            <button type="button" class="gallery-card"
+                    data-category="festival" data-topic="The Story of Holi">
+                <span class="gallery-emoji">🎨</span>
+                <span class="gallery-card-title">The Story of Holi</span>
+                <span class="gallery-card-description">
+                    Explore the festival of colors and its legends.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
 
-                <button class="story-card" data-topic="The Bathukamma Festival of Telangana">
-                    <span class="card-icon">🌼</span>
-                    <h3>Regional Culture</h3>
-                    <p>Learn about regional art, customs and traditions.</p>
-                </button>
+            <button type="button" class="gallery-card"
+                    data-category="festival" data-topic="Bathukamma Festival">
+                <span class="gallery-emoji">🌼</span>
+                <span class="gallery-card-title">Bathukamma</span>
+                <span class="gallery-card-description">
+                    Learn about Telangana's floral festival.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
 
-            </div>
-        </section>
+            <button type="button" class="gallery-card"
+                    data-category="festival" data-topic="The Story of Pongal">
+                <span class="gallery-emoji">🌾</span>
+                <span class="gallery-card-title">The Story of Pongal</span>
+                <span class="gallery-card-description">
+                    Discover Tamil Nadu's harvest celebrations.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
 
-        <section class="story-panel" id="storyPanel">
+            <button type="button" class="gallery-card"
+                    data-category="folklore" data-topic="Tenali Rama Stories">
+                <span class="gallery-emoji">📜</span>
+                <span class="gallery-card-title">Tenali Rama</span>
+                <span class="gallery-card-description">
+                    Enjoy clever tales of wit and wisdom.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
 
-            <div class="section-heading">
-                <p class="eyebrow">YOUR STORY EXPERIENCE</p>
-                <h2 id="storyTitle">Create Your Cultural Story</h2>
-                <p>Choose your preferences and generate your story.</p>
-            </div>
+            <button type="button" class="gallery-card"
+                    data-category="folklore" data-topic="Panchatantra Stories">
+                <span class="gallery-emoji">🦁</span>
+                <span class="gallery-card-title">Panchatantra Tales</span>
+                <span class="gallery-card-description">
+                    Discover animal fables and timeless lessons.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
 
-            <form id="storyForm">
+            <button type="button" class="gallery-card"
+                    data-category="folklore" data-topic="Akbar and Birbal Stories">
+                <span class="gallery-emoji">👑</span>
+                <span class="gallery-card-title">Akbar and Birbal</span>
+                <span class="gallery-card-description">
+                    Explore stories of intelligence and humor.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
 
+            <button type="button" class="gallery-card"
+                    data-category="history" data-topic="The Chola Dynasty">
+                <span class="gallery-emoji">🏛️</span>
+                <span class="gallery-card-title">The Chola Dynasty</span>
+                <span class="gallery-card-description">
+                    Explore South India's influential historic dynasty.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
+
+            <button type="button" class="gallery-card"
+                    data-category="history" data-topic="The History of Hampi">
+                <span class="gallery-emoji">🛕</span>
+                <span class="gallery-card-title">The History of Hampi</span>
+                <span class="gallery-card-description">
+                    Discover the heritage of Vijayanagara.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
+
+            <button type="button" class="gallery-card"
+                    data-category="history" data-topic="The Maurya Empire">
+                <span class="gallery-emoji">🏺</span>
+                <span class="gallery-card-title">The Maurya Empire</span>
+                <span class="gallery-card-description">
+                    Learn about an important ancient Indian empire.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
+
+            <button type="button" class="gallery-card"
+                    data-category="regional" data-topic="Kalamkari Art">
+                <span class="gallery-emoji">🎨</span>
+                <span class="gallery-card-title">Kalamkari Art</span>
+                <span class="gallery-card-description">
+                    Explore traditional painted and printed textile art.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
+
+            <button type="button" class="gallery-card"
+                    data-category="regional" data-topic="Warli Tribal Art">
+                <span class="gallery-emoji">🖌️</span>
+                <span class="gallery-card-title">Warli Art</span>
+                <span class="gallery-card-description">
+                    Discover a distinctive Indian folk-art tradition.
+                </span>
+                <span class="gallery-card-link">Explore story →</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Story Generator -->
+    <section class="story-panel" id="storyPanel">
+        <div class="section-heading">
+            <p class="eyebrow">Your Story Experience</p>
+            <h2 id="storyTitle">Create Your Cultural Story</h2>
+            <p>Choose your preferences and generate your story.</p>
+        </div>
+
+        <form id="storyForm">
+            <div class="form-field">
                 <label for="storyType">Story length</label>
                 <select id="storyType">
                     <option value="Summary">Short Story</option>
                     <option value="Detailed">Detailed Story</option>
                 </select>
+            </div>
 
+            <div class="form-field">
                 <label for="language">Language</label>
                 <select id="language">
                     <option value="English">English</option>
@@ -96,58 +221,78 @@
                     <option value="Tamil">Tamil</option>
                     <option value="Telugu">Telugu</option>
                 </select>
+            </div>
 
+            <div class="form-field">
                 <label for="voice">Narrator voice</label>
                 <select id="voice">
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                 </select>
-
-                <button type="submit" id="generateBtn" class="primary-btn">
-                    ✨ Generate Story & Audio
-                </button>
-
-            </form>
-
-            <p id="statusMessage" role="status" aria-live="polite"></p>
-
-            <div id="resultSection" class="result-section" hidden>
-
-                <h2>Your Cultural Story</h2>
-
-                <div id="storyText" class="story-text"></div>
-
-                <h3>Listen to Your Story</h3>
-
-                <audio id="audioPlayer" controls preload="none">
-                    Your browser does not support audio playback.
-                </audio>
-
-                <button id="downloadBtn" class="secondary-btn" hidden>
-                    Download Audio
-                </button>
-
-                <details class="transcript">
-                    <summary>Read Story Transcript</summary>
-                    <div id="transcriptText"></div>
-                </details>
-
-                <button id="newStoryBtn" class="secondary-btn">
-                    Create Another Story
-                </button>
-
             </div>
 
-        </section>
+            <button type="submit" id="generateBtn" class="primary-btn">
+                ✨ Generate Story &amp; Audio
+            </button>
+        </form>
 
-    </main>
+        <p id="statusMessage" role="status" aria-live="polite"></p>
 
-    <footer>
-        <p>Made with ❤️ to celebrate India's cultural heritage.</p>
-        <p>Powered by Gemini AI and Murf AI.</p>
-    </footer>
+        <!-- Generated result -->
+        <div id="resultSection" class="result-section" hidden>
+            <h2>Your Cultural Story</h2>
 
-    <script src="index.js"></script>
+            <div id="storyText" class="story-text"></div>
 
+            <h3>Listen to Your Story</h3>
+
+            <audio id="audioPlayer" controls preload="none">
+                Your browser does not support audio playback.
+            </audio>
+
+            <button id="downloadBtn" type="button"
+                    class="secondary-btn" hidden>
+                Download Audio
+            </button>
+
+            <details class="transcript">
+                <summary>Read Story Transcript</summary>
+                <div id="transcriptText"></div>
+            </details>
+
+            <button id="saveFavoriteBtn" type="button"
+                    class="secondary-btn favorite-save-btn" hidden>
+                ♡ Save to Favorites
+            </button>
+
+            <button id="newStoryBtn" type="button" class="secondary-btn">
+                Create Another Story
+            </button>
+        </div>
+    </section>
+
+    <!-- Saved Favorites -->
+    <section class="favorites-section" id="favoritesSection">
+        <div class="favorites-heading">
+            <p class="eyebrow">Your Personal Collection</p>
+            <h2>♡ Favorite Stories</h2>
+            <p>Keep the cultural stories you love close at hand.</p>
+        </div>
+
+        <p id="favoritesEmpty" class="favorites-empty">
+            You haven't saved any stories yet. Generate a story and save your favorite!
+        </p>
+
+        <div id="favoritesList" class="favorites-list"></div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Made with ❤️ to celebrate India's cultural heritage.</p>
+    <p>Powered by Gemini AI and Murf AI.</p>
+</footer>
+
+<script src="index.js"></script>
 </body>
 </html>
